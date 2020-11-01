@@ -1,4 +1,4 @@
-# jcpp-maven-plugin
+# remove-unused-imports-maven-plugin
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.xenoamess/jcpp-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.xenoamess/jcpp-maven-plugin)
 
