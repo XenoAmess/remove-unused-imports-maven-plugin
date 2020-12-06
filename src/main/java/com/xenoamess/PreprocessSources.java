@@ -1,8 +1,12 @@
 package com.xenoamess;
 
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -33,6 +37,7 @@ public class PreprocessSources extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
+        boolean haveOtherViolationsThatCannotAutoDelete = false;
         if (pmdXmlPath == null || !pmdXmlPath.exists()) {
             System.out.println("can not find pmd.xml at path:" + pmdXmlPath);
             System.out.println("will do nothing.");
@@ -66,6 +71,7 @@ public class PreprocessSources extends AbstractMojo {
                             fileContent = FileUtils.readFileToString(file);
                             String[] fileContentLines = fileContent.split("(\r\n)|(\r)|(\n)");
                             boolean ifModified = false;
+                            List<Node> removedNodes = new ArrayList<>();
                             for (int k = 0; k < ((Element) fileNode).nodeCount(); k++) {
                                 Node violationNode = ((Element) fileNode).node(k);
                                 if ("violation".equals(violationNode.getName()) && violationNode instanceof Element && ruleNames.contains(((Element) violationNode).attributeValue("rule"))) {
@@ -103,11 +109,17 @@ public class PreprocessSources extends AbstractMojo {
                                         fileContentLines[l] = stringBuilder.toString();
                                     }
                                     ifModified = true;
+                                    removedNodes.add(violationNode);
+                                } else {
+                                    haveOtherViolationsThatCannotAutoDelete = true;
                                 }
                             }
                             if (ifModified) {
                                 String newFileContent = String.join(System.lineSeparator(), fileContentLines);
                                 FileUtils.writeStringToFile(file, newFileContent);
+                            }
+                            for (Node removedNode : removedNodes) {
+                                ((Element) fileNode).remove(removedNode);
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -116,6 +128,28 @@ public class PreprocessSources extends AbstractMojo {
                 }
             }
         }
-        pmdXmlPath.delete();
+        try (Writer fileWriter = new FileWriter(pmdXmlPath);
+             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        ) {
+            document.write(bufferedWriter);
+        } catch (IOException e) {
+            System.err.println("cannot save back to pmd.xml because : ");
+            e.printStackTrace();
+        }
+
+        if (haveOtherViolationsThatCannotAutoDelete) {
+            final String newPmdFileContent;
+            try {
+                newPmdFileContent = FileUtils.readFileToString(pmdXmlPath);
+            } catch (IOException e) {
+                throw new MojoExecutionException(
+                        "still have other pmd violations to solve!!! Also, new pmd file read failed."
+                );
+            }
+            throw new MojoExecutionException(
+                    "still have other pmd violations to solve!!! pmd file be : \n" + newPmdFileContent
+            );
+        }
+
     }
 }

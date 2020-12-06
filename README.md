@@ -15,7 +15,7 @@ include it in your `<build>`
 <plugin>
     <groupId>com.xenoamess</groupId>
     <artifactId>remove-unused-imports-maven-plugin</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <executions>
         <execution>
             <goals>
