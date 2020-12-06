@@ -15,14 +15,16 @@ include it in your `<build>`
 <plugin>
     <groupId>com.xenoamess</groupId>
     <artifactId>remove-unused-imports-maven-plugin</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <executions>
         <execution>
             <goals>
                 <goal>process</goal>
             </goals>
             <configuration>
-                <ruleName>UnusedImports</ruleName>
+                <ruleNames>
+                    <ruleName>UnusedImports</ruleName>
+                </ruleNames>
                 <pmdXmlPath>${basedir}/target/pmd.xml</pmdXmlPath>
             </configuration>
         </execution>

@@ -3,6 +3,7 @@ package com.xenoamess;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -24,8 +25,8 @@ public class PreprocessSources extends AbstractMojo {
     @Parameter(defaultValue = "${basedir}/target/pmd.xml", property = "pmdXmlPath", required = true)
     private File pmdXmlPath;
 
-    @Parameter(defaultValue = "UnusedImports", property = "ruleName", required = true)
-    private String ruleName;
+    @Parameter(defaultValue = "UnusedImports", property = "ruleNames", required = true)
+    private List<String> ruleNames;
 
     public PreprocessSources() {
     }
@@ -67,7 +68,7 @@ public class PreprocessSources extends AbstractMojo {
                             boolean ifModified = false;
                             for (int k = 0; k < ((Element) fileNode).nodeCount(); k++) {
                                 Node violationNode = ((Element) fileNode).node(k);
-                                if ("violation".equals(violationNode.getName()) && violationNode instanceof Element && ruleName.equals(((Element) violationNode).attributeValue("rule"))) {
+                                if ("violation".equals(violationNode.getName()) && violationNode instanceof Element && ruleNames.contains(((Element) violationNode).attributeValue("rule"))) {
                                     int beginline = Integer.parseInt(((Element) violationNode)
                                             .attributeValue("beginline")) - 1;
                                     int endline = Integer.parseInt(((Element) violationNode)
