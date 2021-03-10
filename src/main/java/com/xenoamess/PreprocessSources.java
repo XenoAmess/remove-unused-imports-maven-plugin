@@ -1,14 +1,16 @@
 package com.xenoamess;
 
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -31,6 +33,9 @@ public class PreprocessSources extends AbstractMojo {
 
     @Parameter(defaultValue = "UnusedImports", property = "ruleNames", required = true)
     private List<String> ruleNames;
+
+    @Parameter(defaultValue = "false", property = "breakBuildIfHaveViolationRemains", required = false)
+    private Boolean breakBuildIfHaveViolationRemains;
 
     public PreprocessSources() {
     }
@@ -64,6 +69,7 @@ public class PreprocessSources extends AbstractMojo {
                 for (int j = 0; j < ((Element) rootNode).nodeCount(); j++) {
                     Node fileNode = ((Element) rootNode).node(j);
                     if (fileNode instanceof Element && "file".equals(fileNode.getName())) {
+                        HashMap<Integer, HashSet<Integer>> deleteCharsMap = new HashMap<>();
                         String filePath = ((Element) fileNode).attributeValue("name");
                         String fileContent;
                         try {
@@ -105,6 +111,11 @@ public class PreprocessSources extends AbstractMojo {
 //                                            System.out.println(currentEnd);
 //                                            System.out.println(m);
                                             stringBuilder.setCharAt(m, ' ');
+                                            HashSet<Integer> deleteSet = deleteCharsMap.computeIfAbsent(
+                                                    l,
+                                                    k1 -> new HashSet<>()
+                                            );
+                                            deleteSet.add(m);
                                         }
                                         fileContentLines[l] = stringBuilder.toString();
                                     }
@@ -115,8 +126,25 @@ public class PreprocessSources extends AbstractMojo {
                                 }
                             }
                             if (ifModified) {
-                                String newFileContent = String.join(System.lineSeparator(), fileContentLines);
-                                FileUtils.writeStringToFile(file, newFileContent);
+                                StringBuilder fileStringBuilder = new StringBuilder();
+                                for (int lineIndex = 0; lineIndex < fileContentLines.length; ++lineIndex) {
+                                    String originalCurrentLine = fileContentLines[lineIndex];
+                                    StringBuilder lineStringBuilder = new StringBuilder();
+                                    for (int lineCharIndex = 0; lineCharIndex < originalCurrentLine.length(); ++lineCharIndex) {
+                                        HashSet<Integer> deleteSet = deleteCharsMap.get(lineIndex);
+                                        if (deleteSet == null || !deleteSet.contains(lineCharIndex)) {
+                                            lineStringBuilder.append(originalCurrentLine.charAt(lineCharIndex));
+                                        }
+                                    }
+                                    String newCurrentLine = lineStringBuilder.toString();
+                                    if (!StringUtils.isEmpty(originalCurrentLine) && StringUtils.isEmpty(newCurrentLine)) {
+                                        // do nothing
+                                        // this line has been "deleted".
+                                    } else {
+                                        fileStringBuilder.append(newCurrentLine).append(System.lineSeparator());
+                                    }
+                                }
+                                FileUtils.writeStringToFile(file, fileStringBuilder.toString());
                             }
                             for (Node removedNode : removedNodes) {
                                 ((Element) fileNode).remove(removedNode);
@@ -146,9 +174,13 @@ public class PreprocessSources extends AbstractMojo {
                         "still have other pmd violations to solve!!! Also, new pmd file read failed."
                 );
             }
-            throw new MojoExecutionException(
-                    "still have other pmd violations to solve!!! pmd file be : \n" + newPmdFileContent
-            );
+            if (breakBuildIfHaveViolationRemains) {
+                throw new MojoExecutionException(
+                        "still have other pmd violations to solve!!! pmd file be : \n" + newPmdFileContent
+                );
+            } else {
+                System.err.println("still have other pmd violations to solve!!! pmd file be : \n" + newPmdFileContent);
+            }
         }
 
     }

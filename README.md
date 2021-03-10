@@ -24,8 +24,11 @@ include it in your `<build>`
             <configuration>
                 <ruleNames>
                     <ruleName>UnusedImports</ruleName>
+                    <ruleName>DuplicateImports</ruleName>
+                    <ruleName>UnnecessaryReturn</ruleName>
                 </ruleNames>
                 <pmdXmlPath>${basedir}/target/pmd.xml</pmdXmlPath>
+                <breakBuildIfHaveViolationRemains>false</breakBuildIfHaveViolationRemains>
             </configuration>
         </execution>
     </executions>
