@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.xenoamess</groupId>
     <artifactId>remove-unused-imports-maven-plugin</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>${project.artifactId}</name>
     <description>maven plugin for remove unused imports according to pmd's
