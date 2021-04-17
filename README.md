@@ -15,7 +15,7 @@ include it in your `<build>`
 <plugin>
     <groupId>com.xenoamess</groupId>
     <artifactId>remove-unused-imports-maven-plugin</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <executions>
         <execution>
             <goals>
@@ -26,6 +26,8 @@ include it in your `<build>`
                     <ruleName>UnusedImports</ruleName>
                     <ruleName>DuplicateImports</ruleName>
                     <ruleName>UnnecessaryReturn</ruleName>
+                    <ruleName>ImportFromSamePackage</ruleName>
+                    <ruleName>DontImportJavaLang</ruleName>
                 </ruleNames>
                 <pmdXmlPath>${basedir}/target/pmd.xml</pmdXmlPath>
                 <breakBuildIfHaveViolationRemains>false</breakBuildIfHaveViolationRemains>
