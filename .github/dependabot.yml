@@ -19,9 +19,9 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "master"
+    target-branch: "develop"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "master"
+    target-branch: "develop"
