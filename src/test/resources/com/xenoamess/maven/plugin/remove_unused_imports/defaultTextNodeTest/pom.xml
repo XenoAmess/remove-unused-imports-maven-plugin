@@ -90,7 +90,7 @@
             <plugin>
                 <groupId>com.xenoamess</groupId>
                 <artifactId>remove-unused-imports-maven-plugin</artifactId>
-                <version>0.0.5-SNAPSHOT</version>
+                <version>0.0.5</version>
                 <executions>
                     <execution>
                         <goals>
