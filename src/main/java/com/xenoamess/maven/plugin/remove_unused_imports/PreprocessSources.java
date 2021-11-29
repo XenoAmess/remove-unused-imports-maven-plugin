@@ -1,4 +1,4 @@
-package com.xenoamess;
+package com.xenoamess.maven.plugin.remove_unused_imports;
 
 import java.io.BufferedWriter;
 import java.io.File;
