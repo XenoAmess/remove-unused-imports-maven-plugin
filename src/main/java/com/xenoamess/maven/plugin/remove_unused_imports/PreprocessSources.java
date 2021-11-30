@@ -1,14 +1,16 @@
-package com.xenoamess;
+package com.xenoamess.maven.plugin.remove_unused_imports;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -48,9 +50,9 @@ public class PreprocessSources extends AbstractMojo {
             System.out.println("will do nothing.");
             return;
         }
-        String pmdXmlString = null;
+        String pmdXmlString;
         try {
-            pmdXmlString = FileUtils.readFileToString(pmdXmlPath);
+            pmdXmlString = FileUtils.readFileToString(pmdXmlPath, StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
             throw new MojoExecutionException("could not read pmd.xml", e);
@@ -74,19 +76,26 @@ public class PreprocessSources extends AbstractMojo {
                         String fileContent;
                         try {
                             File file = new File(filePath);
-                            fileContent = FileUtils.readFileToString(file);
+                            fileContent = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                             String[] fileContentLines = fileContent.split("(\r\n)|(\r)|(\n)");
                             boolean ifModified = false;
                             List<Node> removedNodes = new ArrayList<>();
                             for (int k = 0; k < ((Element) fileNode).nodeCount(); k++) {
                                 Node violationNode = ((Element) fileNode).node(k);
+                                if (StringUtils.isBlank(violationNode.getText())) {
+                                    continue;
+                                }
                                 if ("violation".equals(violationNode.getName()) && violationNode instanceof Element && ruleNames.contains(((Element) violationNode).attributeValue("rule"))) {
+                                    //noinspection SpellCheckingInspection
                                     int beginline = Integer.parseInt(((Element) violationNode)
                                             .attributeValue("beginline")) - 1;
+                                    //noinspection SpellCheckingInspection
                                     int endline = Integer.parseInt(((Element) violationNode)
                                             .attributeValue("endline")) - 1;
+                                    //noinspection SpellCheckingInspection
                                     int begincolumn = Integer.parseInt(((Element) violationNode)
                                             .attributeValue("begincolumn")) - 1;
+                                    //noinspection SpellCheckingInspection
                                     int endcolumn = Integer.parseInt(((Element) violationNode).
                                             attributeValue("endcolumn")) - 1;
 
@@ -144,7 +153,7 @@ public class PreprocessSources extends AbstractMojo {
                                         fileStringBuilder.append(newCurrentLine).append(System.lineSeparator());
                                     }
                                 }
-                                FileUtils.writeStringToFile(file, fileStringBuilder.toString());
+                                FileUtils.writeStringToFile(file, fileStringBuilder.toString(), StandardCharsets.UTF_8);
                             }
                             for (Node removedNode : removedNodes) {
                                 ((Element) fileNode).remove(removedNode);
@@ -157,7 +166,7 @@ public class PreprocessSources extends AbstractMojo {
             }
         }
         try (Writer fileWriter = new FileWriter(pmdXmlPath);
-             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)
         ) {
             document.write(bufferedWriter);
         } catch (IOException e) {
@@ -168,7 +177,7 @@ public class PreprocessSources extends AbstractMojo {
         if (haveOtherViolationsThatCannotAutoDelete) {
             final String newPmdFileContent;
             try {
-                newPmdFileContent = FileUtils.readFileToString(pmdXmlPath);
+                newPmdFileContent = FileUtils.readFileToString(pmdXmlPath, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new MojoExecutionException(
                         "still have other pmd violations to solve!!! Also, new pmd file read failed."
