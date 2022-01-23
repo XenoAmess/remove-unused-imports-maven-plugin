@@ -27,7 +27,11 @@ import org.dom4j.Node;
 /**
  * preprocess sources in sourceDirectory.
  */
-@Mojo(name = "process", defaultPhase = LifecyclePhase.INITIALIZE)
+@Mojo(
+        threadSafe = true,
+        name = "process",
+        defaultPhase = LifecyclePhase.INITIALIZE
+)
 public class PreprocessSources extends AbstractMojo {
 
     @Parameter(defaultValue = "${basedir}/target/pmd.xml", property = "pmdXmlPath", required = true)
