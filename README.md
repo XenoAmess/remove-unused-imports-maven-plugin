@@ -1,3 +1,6 @@
+# to anybody who interested in this area:
+# go directly to https://github.com/revelc/impsort-maven-plugin , as that is a better solution.
+
 # remove-unused-imports-maven-plugin
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.xenoamess/remove-unused-imports-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.xenoamess/remove-unused-imports-maven-plugin)
